@@ -28,6 +28,7 @@ public class WriteActionCommand implements BbsCommandImpl {
 		JDBCTemplateDAO dao = new JDBCTemplateDAO();
 		int affected = dao.write(springBbsDTO);
 		System.out.println("입력된결과: "+ affected);
+		// 자원을 별도로 반납하지도 않고 close 메서드는 공란이므로 생략해도 상관없다.
 		// dao.close();
 	}
 }

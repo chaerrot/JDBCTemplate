@@ -7,6 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.ui.Model;
 
+import springboard.model.JDBCTemplateDAO;
+import springboard.model.SpringBbsDTO;
+import springboard.util.EnvFileReader;
+import springboard.util.PagingUtil;
+
 /*
  BbsCommandImpl 인터페이스를 구현했으므로 execute()는 반드시
  오버라이딩해야 한다. 또한 해당 객체는 부모 타입인 BbsCommandImpl로
@@ -46,11 +51,36 @@ public class ListCommand implements BbsCommandImpl {
 			paramMap.put("Word", searchWord);
 		}
 		
-		// 전체 개시물의 개수 카운트
+		// 전체 게시물의 개수 카운트
 		int totalRecordCount = dao.getTotalCount(paramMap);
 		
+		/*********페이징 추가 코드 Start****************/
+		// Environment객체를 통한 properties파일을 읽어온다.
+		int pageSize = Integer.parseInt(EnvFileReader.getValue("SpringBbsInit.properties",
+				"springBoard.pageSize"));
+		int blockPage = Integer.parseInt(EnvFileReader.getValue("SpringBbsInit.properties",
+				"springBoard.blockPage"));
+		// 전체 페이지 수를 계산
+		int totalPage =
+			(int)Math.ceil((double)totalRecordCount/pageSize);
+		// 현재 페이지 번호. 첫 진입일 때는 무조건 1페이지로 지정
+		int nowPage = req.getParameter("nowPage")==null ? 1 :
+			Integer.parseInt(req.getParameter("nowPage"));
+		// 리스트에 출력할 게시물의 구간을 계산(select절의 between에 사용)
+		int start = (nowPage -1) * pageSize + 1;
+		int end = nowPage * pageSize;
+		
+		paramMap.put("start", start);
+		paramMap.put("end", end);
+		
+		
+		/*********페이징 추가 코드 End****************/
+		
 		// 실제 출력할 게시물을 select한 후 반환 받음(페이징 X)
-		ArrayList<SpringBbsDTO> listRows = dao.list(paramMap);
+		// ArrayList<SpringBbsDTO> listRows = dao.list(paramMap);
+
+		// 페이징 적용된 쿼리문을 통한 select(페이징 O)
+		ArrayList<SpringBbsDTO> listRows = dao.listPage(paramMap);
 		
 		// 목록에 출력할 게시물의 가상번호 계산 후 부여하기
 		int virtualNum = 0;
@@ -58,13 +88,28 @@ public class ListCommand implements BbsCommandImpl {
 		
 		for (SpringBbsDTO row: listRows) {
 			// 전체게시물의 개수에서 하나씩 차감하면서 가상번호를 부여한다.(페이징 X)
-			virtualNum = totalRecordCount --;
+			// virtualNum = totalRecordCount --;
+			
+			/*********가상번호계산 추가코드 Start*******************/
+			virtualNum = totalRecordCount
+					- (((nowPage -1)* pageSize) + countNum++);
+			/*********가상번호계산 추가코드 End*******************/
+
 			// 가상번호를 setter를 통해 저장
 			row.setVirtualNum(virtualNum);
 		}
 		
 		// 위에서 처리한 목록의 모든 처리 결과를 Model객체에 저장한다.
 		model.addAttribute("listRows", listRows);
+		/*******페이징 처리 코드 Start********/
+		String pagingImg = PagingUtil.pagingImg(totalRecordCount,
+				pageSize, blockPage, nowPage,
+				req.getContextPath()+"/board/list.do?"+ addQueryString);
+		model.addAttribute("pagingImg", pagingImg);
+		model.addAttribute("totalPage", totalPage);
+		model.addAttribute("nowPage", nowPage);
+		/*******페이징 처리 코드 End********/
+		
 		// JdbcTemplate을 사용할 때는 자원 반납을 하지 않는다.
 		// dao.close();
 		

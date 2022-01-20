@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%> 
+    pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html>
@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+
 <script type="text/javascript">
 	function checkValidate(f){
 		if(f.name.value==""){
@@ -17,11 +18,11 @@
 			f.name.focus();
 			return false;
 		}
-		if(f.pass.value==""){
+		/* if(f.pass.value==""){
 			alert("패스워드를 입력하세요");
 			f.pass.focus();
 			return false;
-		}
+		} */
 		if(f.title.value==""){
 			alert("제목을 입력하세요");
 			f.title.focus();
@@ -35,39 +36,47 @@
 	}
 </script>
 <div class="container">
-	<h2>비회원제 게시판 - 글쓰기 폼</h2>
+	<h2>비회원제 게시판 - 글 수정 폼</h2>
 	
 	<form name="writeFrm" method="post" 
-		action="./writeAction.do" 
-		onsubmit="return checkValidate(this);">
-	<table border=1 width=800>
+		action="./editAction.do"
+		onsubmit="retunr checkValidate(this);">
+		
+	<input type="hid den" name="idx" value="${ viewRow.idx }" />
+	<input type="hid den" name="nowPage" value="${ param.nowPage }" />
+	<input type="hid den" name="pass" value="${ viewRow.pass }" />
+	
+	<table border="1" width="800">
 	<colgroup>
-		<col width="25%"/>
-		<col width="*"/>
+		<col width="25%" />
+		<col width="*" />
 	</colgroup>
 	<tr>
 		<td>작성자</td>
 		<td>
-			<input type="text" name="name" style="width:50%;" />
+			<input type="text" name="name" style="width: 50%;"
+				value="${ viewRow.name }" />
 		</td>
 	</tr>
-	<tr>
+	<!-- <tr>
 		<td>패스워드</td>
 		<td>
-			<input type="password" name="pass" style="width:30%;" />
+		<input" name="password" name="pass" style="width: 30%" />
 		</td>
-	</tr>
+	</tr> -->
 	<tr>
 		<td>제목</td>
 		<td>
-			<input type="text" name="title" style="width:90%;" />
+		<input type="text" name="title" style="widows: 90%"
+			value="${ viewRow.title }" />
 		</td>
 	</tr>
 	<tr>
 		<td>내용</td>
 		<td>
 			<textarea name="contents" 
-				style="width:90%;height:200px;"></textarea>
+				style="widows: 90%; height: 200px;">
+				${ viewRow.contents }</textarea>
 		</td>
 	</tr>
 	<tr>
@@ -79,9 +88,10 @@
 			</button>
 		</td>
 	</tr>
-	</table>	
+	</table>
+	
 	</form>
+	
 </div>
-
 </body>
 </html>
